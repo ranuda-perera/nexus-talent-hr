@@ -145,8 +145,8 @@ const CleaningServices: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12">
-            <div className="bg-white rounded-2xl p-8 shadow-lg">
+          <div className="grid md:grid-cols-2 gap-12 max-w-full">
+            <div className="bg-white rounded-2xl p-8 shadow-lg w-full">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Get in Touch</h3>
               <div className="space-y-6">
                 <div className="flex items-center">
@@ -191,7 +191,7 @@ const CleaningServices: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-8">
+            <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl p-8 w-full">
               <h3 className="text-2xl font-bold mb-6">Why Partner with Nexus HR?</h3>
               <div className="space-y-4">
                 <div className="flex items-start">
