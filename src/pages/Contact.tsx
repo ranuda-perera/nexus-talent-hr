@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, Mail, MapPin, Clock, Globe } from 'lucide-react';
+import { Phone, Mail, Clock, Globe } from 'lucide-react';
 
 const ContactPage: React.FC = () => {
     const whatsappNumber = '+971 55 273 3381';
