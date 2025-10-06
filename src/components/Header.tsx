@@ -29,7 +29,7 @@ const Header: React.FC = () => {
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2 group">
               <img
-                  src="/WhatsApp Image 2025-09-14 at 17.59.41_20fe9daf.jpg"
+                  src="/team.jpg"
                   alt="Nexus Human Resources Consultancy"
                   className="h-10 w-auto"
               />

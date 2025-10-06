@@ -225,7 +225,7 @@ const CleaningServices: React.FC = () => {
           </p>
           
           <a
-            href="/Cleaners proposal (1).pdf"
+            href="/proposal.pdf"
             download="Nexus_HR_Cleaning_Services_Proposal.pdf"
             className="inline-flex items-center justify-center px-8 py-4 bg-white text-green-600 font-bold rounded-xl hover:bg-green-50 transform hover:scale-105 transition-all duration-200 shadow-lg"
           >
