@@ -145,7 +145,7 @@ const CleaningServices: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12 max-w-full">
+          <div className="grid md:grid-cols-2 gap-12">
             <div className="bg-white rounded-2xl p-8 shadow-lg w-full">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Get in Touch</h3>
               <div className="space-y-6">
