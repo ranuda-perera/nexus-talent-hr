@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap') ;
+
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+.swal2-popup {
+    border-radius: 16px !important;
+    font-family: "Segoe UI", sans-serif;
+}
+
+.swal2-title {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.swal2-confirm {
+    background-color: #1E3A8A !important; /* Blue */
+    border-radius: 8px !important;
+    padding: 10px 24px !important;
+}
+
+.swal2-cancel {
+    background-color: #6B7280 !important; /* Gray */
+    border-radius: 8px !important;
+    padding: 10px 24px !important;
+}
