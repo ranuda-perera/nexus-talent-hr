@@ -7,10 +7,16 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+node_modules/
+dist/
+build/
+.env
+.DS_Store
+
+# Large files
+public/Cleaners proposal.pdf
+Backend/uploads/
+
 
 # Editor directories and files
 .vscode/*
