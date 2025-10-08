@@ -180,7 +180,7 @@ const About: React.FC = () => {
                 <Users className="h-6 w-6" />
               </div>
               <h3 className="font-semibold mb-2">Career Consultants</h3>
-              <p className="text-blue-100 text-sm">careers@nexushr.ae</p>
+              <p className="text-blue-100 text-sm">jobs@nexustelenthr.com</p>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-3">
