@@ -165,7 +165,7 @@ const CleaningServices: React.FC = () => {
                     </div>
                     <div>
                       <div className="font-semibold text-gray-900">Phone</div>
-                      <div className="text-gray-600">+123-456-7890</div>
+                      <div className="text-gray-600">+971 58 106 2093</div>
                     </div>
                   </div>
 
