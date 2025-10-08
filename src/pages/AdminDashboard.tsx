@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import {  Briefcase, FileText, Users, LogOut, Menu, X, Plus} from 'lucide-react';
 import Swal from "sweetalert2";
 
+const API_BASE  = import.meta.env.VITE_API_BASE_URL  || "http://localhost:5000/api";
+const FILE_BASE = import.meta.env.VITE_FILE_BASE_URL || "http://localhost:5000";
+
 // Interfaces
 interface Job {
     id: number;
@@ -133,8 +136,8 @@ const PostJobPage: React.FC<{
 
         try {
             const url = isEditMode
-                ? `http://localhost:5000/api/jobs/${formData.id}`
-                : "http://localhost:5000/api/jobs";
+                ? `${API_BASE}/jobs/${formData.id}`
+                : `${API_BASE}/jobs`;
 
             const method = isEditMode ? "PUT" : "POST";
 
@@ -214,9 +217,7 @@ const PostJobPage: React.FC<{
         if (!result.isConfirmed) return;
 
         try {
-            const res = await fetch(`http://localhost:5000/api/jobs/${id}`, {
-                method: 'DELETE'
-            });
+            const res = await fetch(`${API_BASE}/jobs/${id}`, { method: "DELETE" });
 
             if (!res.ok) {
                 throw new Error('Failed to delete job');
@@ -600,7 +601,7 @@ const ApplicationsPage: React.FC<{
 
     const updateStatus = async (id: number, status: string) => {
         try {
-            await fetch(`http://localhost:5000/api/applications/${id}/status`, {
+            await fetch(`${API_BASE}/api/applications/${id}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status })
@@ -627,7 +628,7 @@ const ApplicationsPage: React.FC<{
         if (!result.isConfirmed) return;
 
         try {
-            await fetch(`http://localhost:5000/api/applications/${id}`, { method: "DELETE" });
+            await fetch(`${API_BASE}/applications/${id}`, { method: "DELETE" });
             Swal.fire({
                 title: "Deleted!",
                 text: "The application has been deleted successfully.",
@@ -732,7 +733,7 @@ const ApplicationsPage: React.FC<{
                                     <p>
                                         <span className="font-semibold">Resume:</span>{" "}
                                         <a
-                                            href={`http://localhost:5000/${selectedApplicant.resume.replace(/\\/g, "/")}`}
+                                            href={`${FILE_BASE}/${selectedApplicant.resume.replace(/\\/g, "/")}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-blue-600 hover:underline"
@@ -745,7 +746,7 @@ const ApplicationsPage: React.FC<{
                                     <p>
                                         <span className="font-semibold">Passport Copy:</span>{" "}
                                         <a
-                                            href={`http://localhost:5000/${selectedApplicant.passportCopy.replace(/\\/g, "/")}`}
+                                            href={`${FILE_BASE}/${selectedApplicant.passportCopy.replace(/\\/g, "/")}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-blue-600 hover:underline"
@@ -791,7 +792,7 @@ const ContractsPage: React.FC<{ contracts: Contract[], fetchContracts: () => voi
 
     const updateStatus = async (id: number, status: string) => {
         try {
-            await fetch(`http://localhost:5000/api/contracts/${id}/status`, {
+            await fetch(`${API_BASE}/contracts/${id}/status`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({status})
@@ -818,7 +819,7 @@ const ContractsPage: React.FC<{ contracts: Contract[], fetchContracts: () => voi
         if (!result.isConfirmed) return;
 
         try {
-            await fetch(`http://localhost:5000/api/contracts/${id}`, {method: "DELETE"});
+            await fetch(`${API_BASE}/contracts/${id}`, { method: "DELETE" });
             Swal.fire({
                 title: "Deleted!",
                 text: "The contract has been deleted successfully.",
@@ -980,7 +981,7 @@ const AdminDashboard: React.FC = () => {
 
     const fetchJobs = async () => {
         try {
-            const res = await fetch("http://localhost:5000/api/jobs");
+            const res = await fetch(`${API_BASE}/jobs`);
             const data = await res.json();
             setJobs(data);
         } catch (err) {
@@ -990,7 +991,7 @@ const AdminDashboard: React.FC = () => {
 
     const fetchApplicants = async () => {
         try {
-            const res = await fetch("http://localhost:5000/api/applications");
+            const res = await fetch(`${API_BASE}/applications`);
             const data = await res.json();
             setApplicants(data);
         } catch (err) {
@@ -1000,7 +1001,7 @@ const AdminDashboard: React.FC = () => {
 
     const fetchContracts = async () => {
         try {
-            const res = await fetch("http://localhost:5000/api/contracts");
+            const res = await fetch(`${API_BASE}/contracts`);
             const data = await res.json();
             setContracts(data);
         } catch (err) {
