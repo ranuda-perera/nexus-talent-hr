@@ -62,18 +62,18 @@ const ContactPage: React.FC = () => {
                             {/* Email */}
                             <div className="mb-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Email</h3>
-                                <a href="mailto:info@nexustalent.com" className="text-gray-600 hover:text-blue-600 transition-colors flex items-center gap-2">
+                                <a href="mailto:jobs@nexustalent.com" className="text-gray-600 hover:text-blue-600 transition-colors flex items-center gap-2">
                                     <Mail className="w-5 h-5" />
-                                    info@nexustalent.com
+                                    jobs@nexustalenthr.com
                                 </a>
                             </div>
 
                             {/* Website */}
                             <div className="mb-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Website</h3>
-                                <a href="https://www.nexustalent.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-blue-600 transition-colors flex items-center gap-2">
+                                <a href="https://www.nexustalenthr.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-blue-600 transition-colors flex items-center gap-2">
                                     <Globe className="w-5 h-5" />
-                                    www.nexustalent.com
+                                    www.nexustalenthr.com
                                 </a>
                             </div>
 
@@ -115,10 +115,10 @@ const ContactPage: React.FC = () => {
 
                         <div className="mt-4">
                             <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3609.355098442251!2d54.3685!3d24.4958!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5e65f223b1b9ab%3A0x2b54a1d61644f6f1!2sLiwa%20Street%2C%20Abu%20Dhabi%2C%20UAE!5e0!3m2!1sen!2sae!4v1700000000000!5m2!1sen!2sae"
+                                src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3630.9555862766456!2d54.356807675359036!3d24.48699567817498!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMjTCsDI5JzEzLjIiTiA1NMKwMjEnMzMuOCJF!5e0!3m2!1sen!2slk!4v1759903143561!5m2!1sen!2slk"
                                 width="100%"
                                 height="250"
-                                style={{ border: 0 }}
+                                style={{border: 0}}
                                 allowFullScreen
                                 loading="lazy"
                                 referrerPolicy="no-referrer-when-downgrade"
