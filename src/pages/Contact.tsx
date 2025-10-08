@@ -1,6 +1,8 @@
 import React from 'react';
 import { Phone, Mail, Clock, Globe } from 'lucide-react';
 
+
+
 const ContactPage: React.FC = () => {
     const whatsappNumber = '+971 55 273 3381';
     const handleWhatsAppClick = () => {
@@ -40,13 +42,12 @@ const ContactPage: React.FC = () => {
                                         WhatsApp
                                     </h3>
                                     <button
-                                        onClick={() =>
-                                            window.open("https://wa.me/971552733381", "_blank")
-                                        }
+                                        onClick={handleWhatsAppClick}
                                         className="text-gray-600 hover:text-green-600 transition-colors flex items-center gap-2"
                                     >
-                                        WhatsApp Chat  +971 55 273 3381
+                                        WhatsApp Chat  {whatsappNumber}
                                     </button>
+
                                 </div>
 
                                 {/* Phone */}

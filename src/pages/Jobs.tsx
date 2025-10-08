@@ -6,8 +6,6 @@ import "react-international-phone/style.css";
 
 // === API Base URLs ===
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
-const FILE_BASE = import.meta.env.VITE_FILE_BASE_URL || "http://localhost:5000";
-
 
 interface Job {
   id: number;
@@ -171,33 +169,86 @@ const Jobs: React.FC = () => {
     if (!selectedJob) return;
     if (!validateForm()) return;
 
+    if (!resumeFile) {
+      Swal.fire({
+        title: "Resume Required",
+        text: "Please upload your resume to continue",
+        icon: "warning",
+        confirmButtonColor: "#DC2626"
+      });
+      return;
+    }
+
+    // Show loading indicator
+    Swal.fire({
+      title: "Submitting Application...",
+      text: "Please wait while we upload your documents",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
     try {
-      const formData = new FormData();
-      formData.append("jobId", selectedJob.id.toString());
-      formData.append("fullName", applicationData.fullName);
-      formData.append("email", applicationData.email);
-      formData.append("phone", `${applicationData.countryCode} ${applicationData.phone}`);
-      formData.append("country", applicationData.country);
-      formData.append("age", applicationData.age);
-      formData.append("gender", applicationData.gender);
-      formData.append("experience", applicationData.experience);
+      // 🚀 Upload BOTH files in parallel (much faster!)
+      const uploadPromises = [];
 
-      if (resumeFile) formData.append("resume", resumeFile);
-      if (passportFile) formData.append("passportCopy", passportFile);
+      // Resume upload
+      const resumeForm = new FormData();
+      resumeForm.append("resume", resumeFile);
+      uploadPromises.push(
+          fetch(`${API_BASE}/upload/resume`, {
+            method: "POST",
+            body: resumeForm,
+          }).then(res => res.json())
+      );
 
+      // Passport upload (if exists)
+      if (passportFile) {
+        const passportForm = new FormData();
+        passportForm.append("passportCopy", passportFile);
+        uploadPromises.push(
+            fetch(`${API_BASE}/upload/passport`, {
+              method: "POST",
+              body: passportForm,
+            }).then(res => res.json())
+        );
+      } else {
+        uploadPromises.push(Promise.resolve(null));
+      }
+
+      // Wait for both uploads to complete
+      const [resumeData, passportData] = await Promise.all(uploadPromises);
+
+      const uploadedResumeUrl = resumeData?.url || "";
+      const uploadedPassportUrl = passportData?.url || "";
+
+      // Submit application to database
       const res = await fetch(`${API_BASE}/applications`, {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobId: selectedJob.id,
+          fullName: applicationData.fullName,
+          email: applicationData.email,
+          phone: `${applicationData.countryCode} ${applicationData.phone}`,
+          country: applicationData.country,
+          age: applicationData.age,
+          gender: applicationData.gender,
+          experience: applicationData.experience,
+          resume: uploadedResumeUrl,
+          passportCopy: uploadedPassportUrl,
+        }),
       });
 
       if (!res.ok) throw new Error("Failed to submit application");
 
       Swal.fire({
         title: "Application Successful!",
-        text: "Your resume and passport copy have been submitted successfully!",
+        text: "Your application has been submitted successfully!",
         icon: "success",
-        showConfirmButton: false,
-        timer: 2000,
+        confirmButtonColor: "#1E3A8A",
+        timer: 2500
       });
 
       setIsApplicationModalOpen(false);
@@ -224,6 +275,7 @@ const Jobs: React.FC = () => {
       });
     }
   };
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -386,15 +438,14 @@ const Jobs: React.FC = () => {
                           <div className="w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 shadow-md">
                             {job.industryImage ? (
                                 <img
-                                    src={`${FILE_BASE}/${job.industryImage.replace(/\\/g, "/")}`}
+                                    src={job.industryImage} //  Remove FILE_BASE, use direct URL
                                     alt={job.industry || job.company}
                                     className="w-full h-full object-cover rounded-xl"
                                 />
-
                             ) : (
                                 <span className="text-blue-600 font-bold text-lg">
-                                {getCompanyInitials(job.company)}
-                                </span>
+        {getCompanyInitials(job.company)}
+    </span>
                             )}
                           </div>
                           <div className="flex-1 min-w-0">

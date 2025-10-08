@@ -1,22 +1,27 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 
-interface ProtectedRouteProps {
-    children: React.ReactNode;
-}
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [valid, setValid] = useState<boolean | null>(null);
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-    // Check if user is authenticated
-    const isAuthenticated = () => {
-        const token = localStorage.getItem('token');
-        return !!token;
-    };
+    useEffect(() => {
+        const token = localStorage.getItem("token");
 
-    if (!isAuthenticated()) {
-        // Redirect to login if not authenticated
-        return <Navigate to="/login" replace />;
-    }
+        if (!token) {
+            setValid(false);
+            return;
+        }
 
+        // Optional: verify token with backend
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/verify`, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+            .then((res) => setValid(res.ok))
+            .catch(() => setValid(false));
+    }, []);
+
+    if (valid === null) return null; // loading state if needed
+    if (!valid) return <Navigate to="/login" replace />;
     return <>{children}</>;
 };
 

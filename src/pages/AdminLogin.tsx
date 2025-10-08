@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import Swal from "sweetalert2";
+// === API Base URL ===
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+
 
 const LoginPage: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -12,11 +15,12 @@ const LoginPage: React.FC = () => {
         e.preventDefault();
 
         try {
-            const response = await fetch("http://localhost:5000/api/auth/login", {
+            const response = await fetch(`${API_BASE}/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
             });
+
 
             if (!response.ok) {
                 Swal.fire({

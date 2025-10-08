@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { getConnection, sql } = require("../config/db");
+const pool = require("../config/db"); // Supabase connection
 
-// Create contract
+// === CREATE CONTRACT ===
 router.post("/", async (req, res) => {
     const {
         companyName,
@@ -21,26 +21,28 @@ router.post("/", async (req, res) => {
     } = req.body;
 
     try {
-        const pool = await getConnection();
-        await pool.request()
-            .input("CompanyName", sql.NVarChar, companyName)
-            .input("ContactPerson", sql.NVarChar, contactPerson)
-            .input("Email", sql.NVarChar, email)
-            .input("Phone", sql.NVarChar, phone)
-            .input("Industry", sql.NVarChar, industry)
-            .input("Location", sql.NVarChar, location)
-            .input("NumberOfEmployees", sql.Int, numberOfEmployees)
-            .input("JobType", sql.NVarChar, jobType)
-            .input("StartDate", sql.Date, startDate)
-            .input("Duration", sql.NVarChar, duration)
-            .input("Budget", sql.NVarChar, budget)
-            .input("BudgetCurrency", sql.NVarChar, budgetCurrency || 'AED')
-            .input("Requirements", sql.NVarChar, requirements)
-            .query(`
-                INSERT INTO Contracts
-                (CompanyName, ContactPerson, Email, Phone, Industry, Location, NumberOfEmployees, JobType, StartDate, Duration, Budget, BudgetCurrency, Requirements, Status)
-                VALUES (@CompanyName, @ContactPerson, @Email, @Phone, @Industry, @Location, @NumberOfEmployees, @JobType, @StartDate, @Duration, @Budget, @BudgetCurrency, @Requirements, 'pending')
-            `);
+        await pool.query(
+            `INSERT INTO contracts
+        (company_name, contact_person, email, phone, industry, location,
+         number_of_employees, job_type, start_date, duration, budget,
+         budget_currency, requirements, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending')`,
+            [
+                companyName,
+                contactPerson,
+                email,
+                phone,
+                industry,
+                location,
+                numberOfEmployees,
+                jobType,
+                startDate,
+                duration,
+                budget,
+                budgetCurrency || "AED",
+                requirements
+            ]
+        );
 
         res.status(201).json({ message: "Contract request submitted successfully" });
     } catch (err) {
@@ -49,95 +51,83 @@ router.post("/", async (req, res) => {
     }
 });
 
-// Get all contracts
+// === GET ALL CONTRACTS ===
 router.get("/", async (req, res) => {
     try {
-        const pool = await getConnection();
-        const result = await pool.request().query(`
-            SELECT 
-                Id AS id,
-                CompanyName AS companyName,
-                ContactPerson AS contactPerson,
-                Email AS email,
-                Phone AS phone,
-                Industry AS industry,
-                Location AS location,
-                NumberOfEmployees AS numberOfEmployees,
-                JobType AS jobType,
-                StartDate AS startDate,
-                Duration AS duration,
-                Budget AS budget,
-                BudgetCurrency AS budgetCurrency,
-                Requirements AS requirements,
-                Status AS status,
-                CreatedAt AS createdAt
-            FROM Contracts
-            ORDER BY CreatedAt DESC
-        `);
-        res.json(result.recordset);
+        const result = await pool.query(
+            `SELECT
+         id,
+         company_name AS "companyName",
+         contact_person AS "contactPerson",
+         email,
+         phone,
+         industry,
+         location,
+         number_of_employees AS "numberOfEmployees",
+         job_type AS "jobType",
+         start_date AS "startDate",
+         duration,
+         budget,
+         budget_currency AS "budgetCurrency",
+         requirements,
+         status,
+         created_at AS "createdAt"
+       FROM contracts
+       ORDER BY id DESC`
+        );
+
+        res.json(result.rows);
     } catch (err) {
         console.error("Error fetching contracts:", err);
         res.status(500).json({ message: "Error fetching contracts" });
     }
 });
 
-// Get single contract by ID
+// === GET SINGLE CONTRACT BY ID ===
 router.get("/:id", async (req, res) => {
     const { id } = req.params;
 
     try {
-        const pool = await getConnection();
-        const result = await pool.request()
-            .input("Id", sql.Int, id)
-            .query(`
-                SELECT 
-                    Id AS id,
-                    CompanyName AS companyName,
-                    ContactPerson AS contactPerson,
-                    Email AS email,
-                    Phone AS phone,
-                    Industry AS industry,
-                    Location AS location,
-                    NumberOfEmployees AS numberOfEmployees,
-                    JobType AS jobType,
-                    StartDate AS startDate,
-                    Duration AS duration,
-                    Budget AS budget,
-                    BudgetCurrency AS budgetCurrency,
-                    Requirements AS requirements,
-                    Status AS status,
-                    CreatedAt AS createdAt
-                FROM Contracts
-                WHERE Id = @Id
-            `);
+        const result = await pool.query(
+            `SELECT
+         id,
+         company_name AS "companyName",
+         contact_person AS "contactPerson",
+         email,
+         phone,
+         industry,
+         location,
+         number_of_employees AS "numberOfEmployees",
+         job_type AS "jobType",
+         start_date AS "startDate",
+         duration,
+         budget,
+         budget_currency AS "budgetCurrency",
+         requirements,
+         status,
+         created_at AS "createdAt"
+       FROM contracts
+       WHERE id = $1`,
+            [id]
+        );
 
-        if (result.recordset.length === 0) {
+        if (result.rows.length === 0)
             return res.status(404).json({ message: "Contract not found" });
-        }
 
-        res.json(result.recordset[0]);
+        res.json(result.rows[0]);
     } catch (err) {
         console.error("Error fetching contract:", err);
         res.status(500).json({ message: "Error fetching contract" });
     }
 });
 
-// Update contract status
+// === UPDATE CONTRACT STATUS ===
 router.put("/:id/status", async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
     try {
-        const pool = await getConnection();
-        await pool.request()
-            .input("Id", sql.Int, id)
-            .input("Status", sql.NVarChar, status)
-            .query(`
-                UPDATE Contracts
-                SET Status = @Status
-                WHERE Id = @Id
-            `);
-
+        await pool.query(`UPDATE contracts SET status = $1 WHERE id = $2`, [status, id]);
         res.json({ message: "Contract status updated successfully" });
     } catch (err) {
         console.error("Error updating contract status:", err);
@@ -145,19 +135,12 @@ router.put("/:id/status", async (req, res) => {
     }
 });
 
-// Delete contract
+// === DELETE CONTRACT ===
 router.delete("/:id", async (req, res) => {
     const { id } = req.params;
 
     try {
-        const pool = await getConnection();
-        await pool.request()
-            .input("Id", sql.Int, id)
-            .query(`
-                DELETE FROM Contracts
-                WHERE Id = @Id
-            `);
-
+        await pool.query(`DELETE FROM contracts WHERE id = $1`, [id]);
         res.json({ message: "Contract deleted successfully" });
     } catch (err) {
         console.error("Error deleting contract:", err);

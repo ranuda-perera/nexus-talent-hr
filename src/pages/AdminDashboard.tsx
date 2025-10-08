@@ -3,7 +3,7 @@ import {  Briefcase, FileText, Users, LogOut, Menu, X, Plus} from 'lucide-react'
 import Swal from "sweetalert2";
 
 const API_BASE  = import.meta.env.VITE_API_BASE_URL  || "http://localhost:5000/api";
-const FILE_BASE = import.meta.env.VITE_FILE_BASE_URL || "http://localhost:5000";
+
 
 // Interfaces
 interface Job {
@@ -18,7 +18,7 @@ interface Job {
     description: string;
     gender: string;
     industry?: string;
-    industryImage?: string;
+    industryImage?: string | File;
 }
 
 interface Applicant {
@@ -68,6 +68,7 @@ const PostJobPage: React.FC<{
         title: '',
         company: '',
         location: '',
+        industryImage: undefined,
         type: '',
         experience: '',
         salary: '',
@@ -78,7 +79,6 @@ const PostJobPage: React.FC<{
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-    const [industryImageFile, setIndustryImageFile] = useState<File | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
 
@@ -128,79 +128,69 @@ const PostJobPage: React.FC<{
         }
         return true;
     };
-
-    const handleSubmit = async (e?: React.FormEvent) => {
-        if (e) e.preventDefault();
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
 
         if (!validateForm()) return;
 
         try {
-            const url = isEditMode
-                ? `${API_BASE}/jobs/${formData.id}`
-                : `${API_BASE}/jobs`;
+            let uploadedImageUrl = "";
 
-            const method = isEditMode ? "PUT" : "POST";
+            // 1️⃣ Upload image to Supabase (if a NEW file is selected)
+            if (formData.industryImage && formData.industryImage instanceof File) {
+                const imageFormData = new FormData();
+                imageFormData.append("industryImage", formData.industryImage);
 
-            const submitData = new FormData();
-            submitData.append("title", formData.title);
-            submitData.append("company", formData.company);
-            submitData.append("location", formData.location);
-            submitData.append("type", formData.type);
-            submitData.append("experience", formData.experience);
-            submitData.append("salary", formData.salary);
-            submitData.append("salaryCurrency", formData.salaryCurrency);
-            submitData.append("description", formData.description);
-            submitData.append("gender", formData.gender);
-            submitData.append("industry", formData.industry || "");
+                const uploadResponse = await fetch(`${API_BASE}/upload/job-image`, {
+                    method: "POST",
+                    body: imageFormData,
+                });
 
-            if (industryImageFile) {
-                submitData.append("industryImage", industryImageFile);
+                const uploadData = await uploadResponse.json();
+                if (uploadResponse.ok) {
+                    uploadedImageUrl = uploadData.url;
+                } else {
+                    console.error("Image upload failed:", uploadData);
+                }
             }
 
-            const res = await fetch(url, {
-                method,
-                body: submitData,
-            });
+            // 2️⃣ Create or Update the job
+            const jobData = {
+                title: formData.title,
+                company: formData.company,
+                location: formData.location,
+                type: formData.type,
+                experience: formData.experience,
+                salary: formData.salary,
+                salaryCurrency: formData.salaryCurrency,
+                description: formData.description,
+                gender: formData.gender,
+                industry: formData.industry,
+                industryImage: uploadedImageUrl || (typeof formData.industryImage === 'string' ? formData.industryImage : ""),
+            };
 
-            if (!res.ok) {
-                throw new Error(`Failed to ${isEditMode ? 'update' : 'post'} job`);
+            const response = await fetch(
+                isEditMode ? `${API_BASE}/jobs/${formData.id}` : `${API_BASE}/jobs`,
+                {
+                    method: isEditMode ? "PUT" : "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(jobData),
+                }
+            );
+
+            if (response.ok) {
+                Swal.fire("Success", isEditMode ? "Job updated successfully!" : "Job created successfully!", "success");
+                fetchJobs();
+                handleCancelEdit(); // Reset form
+            } else {
+                Swal.fire("Error", isEditMode ? "Failed to update job" : "Failed to create job", "error");
             }
-
-            Swal.fire({
-                title: "Success!",
-                text: `Job ${isEditMode ? "updated" : "posted"} successfully.`,
-                icon: "success",
-                confirmButtonText: "OK",
-                confirmButtonColor: "#1E3A8A"
-            });
-
-            setFormData({
-                id: 0,
-                title: "",
-                company: "",
-                location: "",
-                type: "",
-                experience: "",
-                salary: "",
-                salaryCurrency: "AED",
-                description: "",
-                gender: ""
-            });
-            setIndustryImageFile(null);
-            setIsEditMode(false);
-            setIsFormOpen(false);
-            fetchJobs();
         } catch (err) {
-            console.error(`Error ${isEditMode ? 'updating' : 'posting'} job:`, err);
-            Swal.fire({
-                title: "Error",
-                text: `Error ${isEditMode ? "updating" : "posting"} job.`,
-                icon: "error",
-                confirmButtonText: "Retry",
-                confirmButtonColor: "#DC2626"
-            });
+            console.error("Error submitting job:", err);
+            Swal.fire("Error", "Something went wrong!", "error");
         }
     };
+
 
     const handleDelete = async (id: number) => {
         const result = await Swal.fire({
@@ -263,7 +253,6 @@ const PostJobPage: React.FC<{
             description: '',
             gender: ''
         });
-        setIndustryImageFile(null);
         setIsEditMode(false);
         setIsFormOpen(false);
     };
@@ -338,13 +327,9 @@ const PostJobPage: React.FC<{
                                     type="file"
                                     accept="image/*"
                                     onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) {
-                                            setIndustryImageFile(file);
-                                            const imageUrl = URL.createObjectURL(file);
-                                            setFormData(prev => ({ ...prev, industryImage: imageUrl }));
+                                        setFormData({ ...formData, industryImage: e.target.files?.[0] })
                                         }
-                                    }}
+                                    }
                                     className="border border-gray-300 p-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer transition-all"
                                 />
                             </div>
@@ -601,15 +586,33 @@ const ApplicationsPage: React.FC<{
 
     const updateStatus = async (id: number, status: string) => {
         try {
-            await fetch(`${API_BASE}/api/applications/${id}/status`, {
+            const response = await fetch(`${API_BASE}/applications/${id}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status })
             });
+
+            if (!response.ok) {
+                throw new Error('Failed to update status');
+            }
+
+            await Swal.fire({
+                title: "Status Updated!",
+                text: `Application status changed to ${status}`,
+                icon: "success",
+                timer: 1500,
+                showConfirmButton: false
+            });
+
             fetchApplicants();
         } catch (err) {
             console.error(err);
-            Swal.fire('Error updating status');
+            Swal.fire({
+                title: 'Error',
+                text: 'Failed to update status',
+                icon: 'error',
+                confirmButtonColor: '#DC2626'
+            });
         }
     };
 
@@ -733,7 +736,7 @@ const ApplicationsPage: React.FC<{
                                     <p>
                                         <span className="font-semibold">Resume:</span>{" "}
                                         <a
-                                            href={`${FILE_BASE}/${selectedApplicant.resume.replace(/\\/g, "/")}`}
+                                            href={selectedApplicant.resume}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-blue-600 hover:underline"
@@ -746,7 +749,7 @@ const ApplicationsPage: React.FC<{
                                     <p>
                                         <span className="font-semibold">Passport Copy:</span>{" "}
                                         <a
-                                            href={`${FILE_BASE}/${selectedApplicant.passportCopy.replace(/\\/g, "/")}`}
+                                            href={selectedApplicant.passportCopy}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-blue-600 hover:underline"
@@ -790,17 +793,54 @@ const ApplicationsPage: React.FC<{
 const ContractsPage: React.FC<{ contracts: Contract[], fetchContracts: () => void }> = ({ contracts, fetchContracts }) => {
     const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
 
+    const formatDate = (dateString: string): string => {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    };
     const updateStatus = async (id: number, status: string) => {
+        console.log('🔄 Updating contract status');
+        console.log('   ID:', id);
+        console.log('   Status:', status);
+
         try {
-            await fetch(`${API_BASE}/contracts/${id}/status`, {
+            const url = `${API_BASE}/contracts/${id}/status`;
+            console.log('   Calling URL:', url);
+
+            const response = await fetch(url, {
                 method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({status})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
             });
+
+            const data = await response.json();
+            console.log('   Response:', response.status, data);
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to update status');
+            }
+
+            await Swal.fire({
+                title: "Status Updated!",
+                text: `Contract status changed to ${status}`,
+                icon: "success",
+                timer: 1500,
+                showConfirmButton: false
+            });
+
             fetchContracts();
-        } catch (err) {
-            console.error(err);
-            Swal.fire('Error updating status');
+        } catch (err: any) {
+            console.error('❌ Error updating contract status:', err);
+            Swal.fire({
+                title: 'Error',
+                text: err.message || 'Failed to update status',
+                icon: 'error',
+                confirmButtonColor: '#DC2626'
+            });
         }
     };
 
@@ -865,41 +905,50 @@ const ContractsPage: React.FC<{ contracts: Contract[], fetchContracts: () => voi
                             </tr>
                             </thead>
                             <tbody>
-                            {contracts.map(c => (
-                                <tr key={c.id} className="border-t hover:bg-gray-50 transition-colors">
-                                    <td className="p-3">{c.companyName}</td>
-                                    <td className="p-3">{c.industry}</td>
-                                    <td className="p-3">{c.phone}</td>
-                                    <td className="p-3">
-                                        <select
-                                            value={c.status}
-                                            onChange={(e) => updateStatus(c.id, e.target.value)}
-                                            className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                        >
-                                            <option value="pending">Pending</option>
-                                            <option value="approved">Approved</option>
-                                            <option value="rejected">Rejected</option>
-                                        </select>
-                                    </td>
-                                    <td className="p-3">
-                                        <div className="flex gap-3 justify-center">
-                                            <button
-                                                onClick={() => setSelectedContract(c)}
-                                                className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                            {Array.isArray(contracts) && contracts.length > 0 ? (
+                                contracts.map((c) => (
+                                    <tr key={c.id} className="border-t hover:bg-gray-50 transition-colors">
+                                        <td className="p-3">{c.companyName}</td>
+                                        <td className="p-3">{c.industry}</td>
+                                        <td className="p-3">{c.phone}</td>
+                                        <td className="p-3">
+                                            <select
+                                                value={c.status}
+                                                onChange={(e) => updateStatus(c.id, e.target.value)}
+                                                className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                             >
-                                                View
-                                            </button>
-                                            <button
-                                                onClick={() => deleteContract(c.id)}
-                                                className="text-red-600 hover:text-red-800 font-medium transition-colors"
-                                            >
-                                                Delete
-                                            </button>
-                                        </div>
+                                                <option value="pending">Pending</option>
+                                                <option value="approved">Approved</option>
+                                                <option value="rejected">Rejected</option>
+                                            </select>
+                                        </td>
+                                        <td className="p-3">
+                                            <div className="flex gap-3 justify-center">
+                                                <button
+                                                    onClick={() => setSelectedContract(c)}
+                                                    className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                                                >
+                                                    View
+                                                </button>
+                                                <button
+                                                    onClick={() => deleteContract(c.id)}
+                                                    className="text-red-600 hover:text-red-800 font-medium transition-colors"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={5} className="text-center p-4 text-gray-500">
+                                        No contracts found
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                             </tbody>
+
                         </table>
                     </div>
 
@@ -924,8 +973,8 @@ const ContractsPage: React.FC<{ contracts: Contract[], fetchContracts: () => voi
                                         className="font-semibold">Employees Needed:</span> {selectedContract.numberOfEmployees}
                                     </p>
                                     <p><span className="font-semibold">Job Type:</span> {selectedContract.jobType}</p>
-                                    <p><span className="font-semibold">Start Date:</span> {selectedContract.startDate}
-                                    </p>
+                                    <p><span className="font-semibold">Start Date:</span> {formatDate(selectedContract.startDate)}</p>
+
                                     <p><span className="font-semibold">Duration:</span> {selectedContract.duration}</p>
                                     <p><span
                                         className="font-semibold">Budget:</span> {selectedContract.budgetCurrency} {selectedContract.budget}

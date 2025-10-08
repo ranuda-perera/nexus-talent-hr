@@ -4,6 +4,8 @@ import Swal from "sweetalert2";
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
 
+// === API Base URL ===
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 
 const CURRENCIES = ['AED', 'USD', 'EUR', 'GBP', 'INR', 'SAR'];
@@ -118,7 +120,7 @@ const RequestWorkforcePage: React.FC = () => {
         if (!validateForm()) return;
         try {
             const budget = formData.budgetRange || (formData.budgetMin && formData.budgetMax ? `${formData.budgetMin} - ${formData.budgetMax}` : '');
-            const res = await fetch("http://localhost:5000/api/contracts", {
+            const res = await fetch(`${API_BASE}/contracts`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -128,6 +130,7 @@ const RequestWorkforcePage: React.FC = () => {
                     numberOfEmployees: parseInt(formData.numberOfEmployees)
                 }),
             });
+
             if (!res.ok) throw new Error("Failed to submit workforce request");
             Swal.fire({
                 title: "Request Submitted!",

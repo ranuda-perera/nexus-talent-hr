@@ -1,44 +1,44 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { getConnection, sql } = require("../config/db");
-
+const pool = require("../config/db"); // pg connection
 const SECRET_KEY = "supersecretkey";
 
-// Register
+// Register admin (only used once manually)
 exports.register = async (req, res) => {
     try {
         const { email, password, role } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
-        const pool = await getConnection();
-        await pool.request()
-            .input("email", sql.NVarChar, email)
-            .input("passwordHash", sql.NVarChar, hashedPassword)
-            .input("role", sql.NVarChar, role || "admin")
-            .query("INSERT INTO Users (Email, PasswordHash, Role) VALUES (@email, @passwordHash, @role)");
-        res.status(201).json({ message: "User registered" });
+
+        await pool.query(
+            "INSERT INTO admins (email, password_hash, full_name) VALUES ($1, $2, $3)",
+            [email, hashedPassword, role || "Admin User"]
+        );
+
+        res.status(201).json({ message: "Admin registered successfully" });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: err.message });
     }
 };
 
-// Login
+// Login for admin
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const pool = await getConnection();
-        const result = await pool.request()
-            .input("email", sql.NVarChar, email)
-            .query("SELECT * FROM Users WHERE Email = @email");
+        const result = await pool.query("SELECT * FROM admins WHERE email = $1", [email]);
 
-        if (result.recordset.length === 0) return res.status(400).json({ message: "Invalid credentials" });
+        if (result.rows.length === 0)
+            return res.status(400).json({ message: "Invalid credentials" });
 
-        const user = result.recordset[0];
-        const isPasswordValid = await bcrypt.compare(password, user.PasswordHash);
-        if (!isPasswordValid) return res.status(400).json({ message: "Invalid credentials" });
+        const user = result.rows[0];
+        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+        if (!isPasswordValid)
+            return res.status(400).json({ message: "Invalid credentials" });
 
-        const token = jwt.sign({ id: user.Id, role: user.Role }, SECRET_KEY, { expiresIn: "1h" });
+        const token = jwt.sign({ id: user.id, role: "admin" }, SECRET_KEY, { expiresIn: "2h" });
         res.json({ token });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: err.message });
     }
 };
