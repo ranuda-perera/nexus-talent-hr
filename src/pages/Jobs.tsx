@@ -4,6 +4,11 @@ import Swal from "sweetalert2";
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
 
+// === API Base URLs ===
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const FILE_BASE = import.meta.env.VITE_FILE_BASE_URL || "http://localhost:5000";
+
+
 interface Job {
   id: number;
   title: string;
@@ -68,7 +73,7 @@ const Jobs: React.FC = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/jobs");
+        const res = await fetch(`${API_BASE}/jobs`);
         const data = await res.json();
         setJobs(data);
       } catch (err) {
@@ -180,7 +185,7 @@ const Jobs: React.FC = () => {
       if (resumeFile) formData.append("resume", resumeFile);
       if (passportFile) formData.append("passportCopy", passportFile);
 
-      const res = await fetch("http://localhost:5000/api/applications", {
+      const res = await fetch(`${API_BASE}/applications`, {
         method: "POST",
         body: formData,
       });
@@ -381,7 +386,7 @@ const Jobs: React.FC = () => {
                           <div className="w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 shadow-md">
                             {job.industryImage ? (
                                 <img
-                                    src={`http://localhost:5000/${job.industryImage.replace(/\\/g, "/")}`}
+                                    src={`${FILE_BASE}/${job.industryImage.replace(/\\/g, "/")}`}
                                     alt={job.industry || job.company}
                                     className="w-full h-full object-cover rounded-xl"
                                 />
