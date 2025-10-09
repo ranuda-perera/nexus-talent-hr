@@ -677,44 +677,56 @@ const ApplicationsPage: React.FC<{
                         </tr>
                         </thead>
                         <tbody>
-                        {applicants.map(app => (
-                            <tr key={app.id} className="border-t hover:bg-gray-50 transition-colors">
-                                <td className="p-3">{app.fullName}</td>
-                                <td className="p-3">{getJobTitle(app.jobId)}</td>
-                                <td className="p-3">{app.phone}</td>
-                                <td className="p-3">
-                                    <select
-                                        value={app.status}
-                                        onChange={(e) => {
-                                            e.stopPropagation();
-                                            updateStatus(app.id, e.target.value);
-                                        }}
-                                        className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer transition-all"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <option value="pending">Pending</option>
-                                        <option value="approved">Approved</option>
-                                        <option value="rejected">Rejected</option>
-                                    </select>
-                                </td>
-                                <td className="p-3">
-                                    <div className="flex gap-3 justify-center">
-                                        <button
-                                            onClick={() => setSelectedApplicant(app)}
-                                            className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                        {Array.isArray(applicants) && applicants.length > 0 ? (
+                            applicants.map(app => (
+                                <tr key={app.id} className="border-t hover:bg-gray-50 transition-colors">
+                                    <td className="p-3">{app.fullName}</td>
+                                    <td className="p-3">{getJobTitle(app.jobId)}</td>
+                                    <td className="p-3">{app.phone}</td>
+                                    <td className="p-3">
+                                        <select
+                                            value={app.status}
+                                            onChange={(e) => {
+                                                e.stopPropagation();
+                                                updateStatus(app.id, e.target.value);
+                                            }}
+                                            className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer transition-all"
+                                            onClick={(e) => e.stopPropagation()}
                                         >
-                                            View
-                                        </button>
-                                        <button
-                                            onClick={() => deleteApplicant(app.id)}
-                                            className="text-red-600 hover:text-red-800 font-medium transition-colors"
-                                        >
-                                            Delete
-                                        </button>
+                                            <option value="pending">Pending</option>
+                                            <option value="approved">Approved</option>
+                                            <option value="rejected">Rejected</option>
+                                        </select>
+                                    </td>
+                                    <td className="p-3">
+                                        <div className="flex gap-3 justify-center">
+                                            <button
+                                                onClick={() => setSelectedApplicant(app)}
+                                                className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                                            >
+                                                View
+                                            </button>
+                                            <button
+                                                onClick={() => deleteApplicant(app.id)}
+                                                className="text-red-600 hover:text-red-800 font-medium transition-colors"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={5} className="text-center p-8 text-gray-500">
+                                    <div className="flex flex-col items-center justify-center py-8">
+                                        <Users className="w-16 h-16 text-gray-300 mb-4" />
+                                        <p className="text-lg font-semibold text-gray-600 mb-2">No applications yet</p>
+                                        <p className="text-sm text-gray-500">Applications will appear here once candidates start applying</p>
                                     </div>
                                 </td>
                             </tr>
-                        ))}
+                        )}
                         </tbody>
                     </table>
                 </div>
