@@ -1,7 +1,8 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const pool = require("../config/db"); // pg connection
-const SECRET_KEY = "supersecretkey";
+const SECRET_KEY = process.env.JWT_SECRET || "supersecretkey";
+
 
 // Register admin (only used once manually)
 exports.register = async (req, res) => {

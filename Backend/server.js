@@ -10,15 +10,22 @@ const contractsRoutes = require("./routes/contracts");
 
 const app = express();
 
-// Middleware
-app.use(cors());
+//  Proper CORS setup
+app.use(
+    cors({
+        origin: ["https://www.nexustalenthr.com", "http://localhost:5173"],
+        credentials: true,
+        allowedHeaders: ["Content-Type", "Authorization"],
+    })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static folders
+// Static folders (optional)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Use routes
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobsRoutes);
 app.use("/api/applications", applicationsRoutes);
@@ -30,13 +37,9 @@ app.get("/api/health", (req, res) => {
     res.json({ message: "Nexus Talent API is running" });
 });
 
-// Serve frontend
-app.use(express.static(path.join(__dirname, "./dist")));
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "./dist", "index.html"));
-});
+//  Removed dist serving — handled by Vercel
 
-// Error handling
+// Error handler
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({
@@ -48,7 +51,7 @@ app.use((err, req, res, next) => {
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`✅ Server is running on http://localhost:${PORT}`);
+    console.log(` Server is running on http://localhost:${PORT}`);
 });
 
 module.exports = app;
