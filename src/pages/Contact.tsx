@@ -4,10 +4,13 @@ import { Phone, Mail, Clock, Globe } from 'lucide-react';
 
 
 const ContactPage: React.FC = () => {
-    const whatsappNumber = '+971 55 273 3381';
+    const whatsappNumber = '+971581062091';
+
     const handleWhatsAppClick = () => {
-        window.open(`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`, '_blank');
+        const cleanNumber = whatsappNumber.replace(/[^\d]/g, ''); // remove + and symbols
+        window.open(`https://wa.me/${cleanNumber}`, '_blank');
     };
+
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -53,9 +56,9 @@ const ContactPage: React.FC = () => {
                                 {/* Phone */}
                                 <div className="mb-6">
                                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Phone</h3>
-                                    <a href="tel:+97123366807" className="text-gray-600 hover:text-blue-600 transition-colors flex items-center gap-2">
+                                    <a href="tel:+971581062091" className="text-gray-600 hover:text-blue-600 transition-colors flex items-center gap-2">
                                         <Phone className="w-5 h-5" />
-                                        +971 2 366 807
+                                        +971 58 106 2091
                                     </a>
                                 </div>
                             </div>
